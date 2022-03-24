@@ -35,6 +35,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 typedef unsigned int glIndex_t;
 
 extern refimport_t ri;
+extern cvar_t* r_convertModelBones;
 
 
 // 13 bits
@@ -514,7 +515,7 @@ typedef struct {
 typedef struct skin_s {
 	char		name[MAX_QPATH];		// game path, including extension
 	int			numSurfaces;
-	skinSurface_t	*surfaces[128];
+	skinSurface_t	*surfaces[256];
 } skin_t;
 
 

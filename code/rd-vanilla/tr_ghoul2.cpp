@@ -3494,32 +3494,32 @@ Bone  52:   "face_always_":
 
 */
 
-qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean &bAlreadyCached ) {
+qboolean R_LoadMDXM(model_t* mod, void* buffer, const char* mod_name, qboolean& bAlreadyCached) {
 	int					i, l, j;
-	mdxmHeader_t		*pinmodel, *mdxm;
-	mdxmLOD_t			*lod;
-	mdxmSurface_t		*surf;
+	mdxmHeader_t* pinmodel, * mdxm;
+	mdxmLOD_t* lod;
+	mdxmSurface_t* surf;
 	int					version;
 	int					size;
-	shader_t			*sh;
-	mdxmSurfHierarchy_t	*surfInfo;
+	shader_t* sh;
+	mdxmSurfHierarchy_t* surfInfo;
 
 #ifdef Q3_BIG_ENDIAN
 	int					k;
-	mdxmTriangle_t		*tri;
-	mdxmVertex_t		*v;
-	int					*boneRef;
-	mdxmLODSurfOffset_t	*indexes;
-	mdxmVertexTexCoord_t	*pTexCoords;
-	mdxmHierarchyOffsets_t	*surfIndexes;
+	mdxmTriangle_t* tri;
+	mdxmVertex_t* v;
+	int* boneRef;
+	mdxmLODSurfOffset_t* indexes;
+	mdxmVertexTexCoord_t* pTexCoords;
+	mdxmHierarchyOffsets_t* surfIndexes;
 #endif
 
-	pinmodel= (mdxmHeader_t *)buffer;
+	pinmodel = (mdxmHeader_t*)buffer;
 	//
 	// read some fields from the binary, but only LittleLong() them when we know this wasn't an already-cached model...
 	//
 	version = (pinmodel->version);
-	size	= (pinmodel->ofsEnd);
+	size = (pinmodel->ofsEnd);
 
 	if (!bAlreadyCached)
 	{
@@ -3529,19 +3529,19 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 	if (version != MDXM_VERSION) {
 #ifdef _DEBUG
-		Com_Error( ERR_DROP,       "R_LoadMDXM: %s has wrong version (%i should be %i)\n", mod_name, version, MDXM_VERSION);
+		Com_Error(ERR_DROP, "R_LoadMDXM: %s has wrong version (%i should be %i)\n", mod_name, version, MDXM_VERSION);
 #else
-		ri.Printf( PRINT_WARNING, "R_LoadMDXM: %s has wrong version (%i should be %i)\n", mod_name, version, MDXM_VERSION);
+		ri.Printf(PRINT_WARNING, "R_LoadMDXM: %s has wrong version (%i should be %i)\n", mod_name, version, MDXM_VERSION);
 #endif
 		return qfalse;
 	}
 
-	mod->type	   = MOD_MDXM;
+	mod->type = MOD_MDXM;
 	mod->dataSize += size;
 
 	qboolean bAlreadyFound = qfalse;
 	mdxm = mod->mdxm = (mdxmHeader_t*) //R_Hunk_Alloc( size );
-										RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
+		RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
 
 	assert(bAlreadyCached == bAlreadyFound);
 
@@ -3554,8 +3554,8 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		// Aaaargh. Kill me now...
 		//
 		bAlreadyCached = qtrue;
-		assert( mdxm == buffer );
-//		memcpy( mdxm, buffer, size );	// and don't do this now, since it's the same thing
+		assert(mdxm == buffer);
+		//		memcpy( mdxm, buffer, size );	// and don't do this now, since it's the same thing
 
 		LL(mdxm->ident);
 		LL(mdxm->version);
@@ -3568,18 +3568,18 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 
 	// first up, go load in the animation file we need that has the skeletal animation info for this model
-	mdxm->animIndex = RE_RegisterModel(va ("%s.gla",mdxm->animName));
-	
-	char	animGLAName[MAX_QPATH];
-	char	*strippedName;
-	char	*slash = NULL;
-	const char*mapname = sv_mapname->string;
+	mdxm->animIndex = RE_RegisterModel(va("%s.gla", mdxm->animName));
 
-	if (strcmp(mapname,"nomap") )
+	char	animGLAName[MAX_QPATH];
+	char* strippedName;
+	char* slash = NULL;
+	const char* mapname = sv_mapname->string;
+
+	if (strcmp(mapname, "nomap"))
 	{
-		if (strrchr(mapname,'/') )	//maps in subfolders use the root name, ( presuming only one level deep!)
+		if (strrchr(mapname, '/'))	//maps in subfolders use the root name, ( presuming only one level deep!)
 		{
-			mapname = strrchr(mapname,'/')+1;
+			mapname = strrchr(mapname, '/') + 1;
 		}
 		//stripped name of GLA for this model
 		Q_strncpyz(animGLAName, mdxm->animName, sizeof(animGLAName));
@@ -3593,11 +3593,11 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		{
 			RE_RegisterModel(va("models/players/%s_%s/%s_%s.gla", strippedName, mapname, strippedName, mapname));
 		}
-	}		
+	}
 
 #ifndef JK2_MODE
 	bool isAnOldModelFile = false;
-	if (mdxm->numBones == 72 && strstr(mdxm->animName,"_humanoid") )
+	if (mdxm->numBones == 72 && strstr(mdxm->animName, "_humanoid"))
 	{
 		isAnOldModelFile = true;
 	}
@@ -3605,28 +3605,28 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 	if (!mdxm->animIndex)
 	{
-		ri.Printf( PRINT_WARNING, "R_LoadMDXM: missing animation file %s for mesh %s\n", mdxm->animName, mdxm->name);
+		ri.Printf(PRINT_WARNING, "R_LoadMDXM: missing animation file %s for mesh %s\n", mdxm->animName, mdxm->name);
 		return qfalse;
 	}
 #ifndef JK2_MODE
 	else
 	{
-		assert (tr.models[mdxm->animIndex]->mdxa->numBones == mdxm->numBones);
+		assert(tr.models[mdxm->animIndex]->mdxa->numBones == mdxm->numBones);
 		if (tr.models[mdxm->animIndex]->mdxa->numBones != mdxm->numBones)
 		{
-			if ( isAnOldModelFile )
+			if (isAnOldModelFile)
 			{
-				ri.Printf( PRINT_WARNING, "R_LoadMDXM: converting jk2 model %s\n", mod_name);
+				ri.Printf(PRINT_WARNING, "R_LoadMDXM: converting jk2 model %s\n", mod_name);
 			}
 			else
 			{
 #ifdef _DEBUG
-				Com_Error( ERR_DROP,       "R_LoadMDXM: %s has different bones than anim (%i != %i)\n", mod_name, mdxm->numBones, tr.models[mdxm->animIndex]->mdxa->numBones);
+				Com_Error(ERR_DROP, "R_LoadMDXM: %s has different bones than anim (%i != %i)\n", mod_name, mdxm->numBones, tr.models[mdxm->animIndex]->mdxa->numBones);
 #else
-				ri.Printf( PRINT_WARNING, "R_LoadMDXM: %s has different bones than anim (%i != %i)\n", mod_name, mdxm->numBones, tr.models[mdxm->animIndex]->mdxa->numBones);
+				ri.Printf(PRINT_WARNING, "R_LoadMDXM: %s has different bones than anim (%i != %i)\n", mod_name, mdxm->numBones, tr.models[mdxm->animIndex]->mdxa->numBones);
 #endif
 			}
-			if ( !isAnOldModelFile )
+			if (!isAnOldModelFile)
 			{//hmm, load up the old JK2 ones anyway?
 				return qfalse;
 			}
@@ -3634,13 +3634,18 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 #endif
 
-	mod->numLods = mdxm->numLODs -1 ;	//copy this up to the model for ease of use - it wil get inced after this.
+	mod->numLods = mdxm->numLODs - 1;	//copy this up to the model for ease of use - it wil get inced after this.
 
 	if (bAlreadyFound)
 	{
 		return qtrue;	// All done. Stop, go no further, do not LittleLong(), do not pass Go...
 	}
 
+	bool isAnNewModelFile = false;
+	if (mdxm->numBones == 53 && strstr(mdxm->animName, "_humanoid") && r_convertModelBones->integer)
+	{
+		isAnNewModelFile = true;
+	}
 	surfInfo = (mdxmSurfHierarchy_t *)( (byte *)mdxm + mdxm->ofsSurfHierarchy);
 #ifdef Q3_BIG_ENDIAN
 	surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)mdxm + sizeof(mdxmHeader_t));
@@ -3734,7 +3739,33 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 			// change to surface identifier
 			surf->ident = SF_MDX;
+			if ( isAnNewModelFile )
+			{
+				int* boneRef = (int*)((byte*)surf + surf->ofsBoneReferences);
+				for (j = 0; j < surf->numBoneReferences; j++)
+				{
+					assert(boneRef[j] >= 0 && boneRef[j] < 53);
+					if (boneRef[j] >= 0 && boneRef[j] < 53)
+					{
+						int k;
 
+						for (k = 0; k < 72; k++)
+						{
+							if (OldToNewRemapTable[k] == boneRef[j])
+							{
+								boneRef[j] = k;
+								break;
+							}
+
+							if (k == 72) boneRef[j] = 0;
+						}
+					}
+					else
+					{
+						boneRef[j] = 0;
+					}
+				}
+			}
 			// register the shaders
 #ifdef Q3_BIG_ENDIAN
 			// swap the LOD offset

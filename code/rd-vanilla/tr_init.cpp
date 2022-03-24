@@ -185,6 +185,8 @@ cvar_t	*com_buildScript;
 cvar_t	*r_environmentMapping;
 cvar_t *r_screenshotJpegQuality;
 
+cvar_t* r_convertModelBones;
+
 #if !defined(__APPLE__)
 PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
 #endif
@@ -1658,6 +1660,7 @@ Ghoul2 Insert Start
 	broadsword_effcorr = ri.Cvar_Get( "broadsword_effcorr", "1", 0);
 	broadsword_ragtobase = ri.Cvar_Get( "broadsword_ragtobase", "2", 0);
 	broadsword_dircap = ri.Cvar_Get( "broadsword_dircap", "64", 0);
+	r_convertModelBones = ri.Cvar_Get("r_convertModelBones", "1", CVAR_ARCHIVE_ND);
 
 /*
 Ghoul2 Insert End
